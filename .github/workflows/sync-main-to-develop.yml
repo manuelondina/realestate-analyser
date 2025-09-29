@@ -22,26 +22,28 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # 3️⃣ Create or update temporary sync branch from main
+      # 3️⃣ Create or update temporary sync branch safely
       - name: Create or update sync branch
         run: |
           SYNC_BRANCH="sync/main-to-develop-${GITHUB_RUN_ID}"
           MAIN_BRANCH="main"
           DEVELOP_BRANCH="develop"
 
-          # Fetch remote main to ensure up-to-date
+          # Fetch remote branches to ensure everything is available
           git fetch origin $MAIN_BRANCH
+          git fetch origin
 
-          # Check if temp branch exists on remote
-          if git ls-remote --heads origin "$SYNC_BRANCH" > /dev/null; then
-            git checkout "$SYNC_BRANCH"
+          # If temp branch exists locally, checkout and rebase
+          if git show-ref --verify --quiet refs/heads/$SYNC_BRANCH; then
+            git checkout $SYNC_BRANCH
             git rebase origin/$MAIN_BRANCH --no-verify
           else
-            git checkout -b "$SYNC_BRANCH" origin/$MAIN_BRANCH
+            # Create the temp branch explicitly from origin/main
+            git checkout -b $SYNC_BRANCH origin/$MAIN_BRANCH
           fi
 
           # Push temp branch to remote
-          git push -u origin "$SYNC_BRANCH"
+          git push -u origin $SYNC_BRANCH
 
       # 4️⃣ Create or edit PR to develop
       - name: Create PR to develop
@@ -65,4 +67,3 @@ jobs:
               --title "$PR_TITLE" \
               --body "$PR_BODY" \
               --label "sync"
-          fi
