@@ -79,17 +79,21 @@ jobs:
             gh pr edit "$EXISTING_PR" --title "$PR_TITLE" --body "$PR_BODY"
           else
             echo "Creating new PR"
-            # Create PR without label first
-            PR_NUMBER=$(gh pr create \
+            # Create PR with label
+            gh pr create \
               --head "$SYNC_BRANCH" \
               --base "$DEVELOP_BRANCH" \
               --title "$PR_TITLE" \
               --body "$PR_BODY" \
-              --json number --jq '.number')
-            
-            # Try to add label, but don't fail if it doesn't exist
-            echo "Created PR #$PR_NUMBER"
-            gh pr edit "$PR_NUMBER" --add-label "sync" 2>/dev/null || echo "Note: 'sync' label not found, skipping label addition"
+              --label "sync" || {
+                # If label fails, try without it
+                echo "Failed to add label, creating PR without label"
+                gh pr create \
+                  --head "$SYNC_BRANCH" \
+                  --base "$DEVELOP_BRANCH" \
+                  --title "$PR_TITLE" \
+                  --body "$PR_BODY"
+              }
           fi
 
       # 7️⃣ Optional: Clean up old sync branches
