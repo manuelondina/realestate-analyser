@@ -29,7 +29,8 @@
 
 **RealEstate Analyser** can optionally gather real estate listing data from multiple sources to enhance its analysis.  
 
-> ⚠️ All data collection is intended to be **legal and ethical**. Users of this tool are responsible for respecting website terms, copyright, and privacy laws when integrating external data. Always prefer **official APIs** when available.
+> ⚠️ All data collection is intended to be **legal and ethical**.
+> Users of this tool are responsible for respecting website terms, copyright, and privacy laws when integrating external data. Always prefer **official APIs** when available.
 
 ### Features
 - Aggregate property listings from multiple sources to build richer datasets.  
