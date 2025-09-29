@@ -9,13 +9,13 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1️⃣ Checkout main with full history
+      # 1️⃣ Checkout main with full history and PAT for write access
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.GH_PAT }} # <-- Use your PAT secret here
 
       # 2️⃣ Configure Git
       - name: Configure Git
@@ -43,13 +43,13 @@ jobs:
             git checkout -b $SYNC_BRANCH origin/$MAIN_BRANCH
           fi
 
-          # Push temp branch to remote
+          # Push temp branch to remote using PAT
           git push -u origin $SYNC_BRANCH
 
       # 4️⃣ Create or edit PR to develop
       - name: Create PR to develop
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }} # Use PAT here too
         run: |
           SYNC_BRANCH="sync/main-to-develop-${GITHUB_RUN_ID}"
           DEVELOP_BRANCH="develop"
