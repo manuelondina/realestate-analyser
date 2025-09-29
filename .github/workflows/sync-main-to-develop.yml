@@ -24,7 +24,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: sync main into develop"
-          branch: sync/main-to-develop
+          branch: sync/main-to-develop-${{ github.run_id }}
           base: develop
           title: "Sync main → develop"
           body: "Automatic PR to update develop branch with changes from main."
