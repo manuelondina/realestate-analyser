@@ -5,7 +5,7 @@ on:
     branches:
       - main
 
-# Grant write permissions to the default GITHUB_TOKEN
+# Grant write permissions (still needed for some operations)
 permissions:
   contents: write
   pull-requests: write
@@ -14,12 +14,13 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1️⃣ Checkout main with full history
+      # 1️⃣ Checkout main with full history using PAT
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
 
       # 2️⃣ Configure Git
       - name: Configure Git
@@ -46,10 +47,20 @@ jobs:
           # Push to remote
           git push -u origin $SYNC_BRANCH
 
-      # 5️⃣ Create PR to develop
+      # 5️⃣ Ensure sync label exists
+      - name: Create sync label if needed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh label create "sync" \
+            --description "Automated sync PRs" \
+            --color "0E8A16" \
+            --force 2>/dev/null || echo "Label already exists or created"
+
+      # 6️⃣ Create PR to develop
       - name: Create PR to develop
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           SYNC_BRANCH="sync/main-to-develop-${GITHUB_RUN_ID}"
           DEVELOP_BRANCH="develop"
@@ -68,15 +79,20 @@ jobs:
             gh pr edit "$EXISTING_PR" --title "$PR_TITLE" --body "$PR_BODY"
           else
             echo "Creating new PR"
-            gh pr create \
+            # Create PR without label first
+            PR_NUMBER=$(gh pr create \
               --head "$SYNC_BRANCH" \
               --base "$DEVELOP_BRANCH" \
               --title "$PR_TITLE" \
               --body "$PR_BODY" \
-              --label "sync"
+              --json number --jq '.number')
+            
+            # Try to add label, but don't fail if it doesn't exist
+            echo "Created PR #$PR_NUMBER"
+            gh pr edit "$PR_NUMBER" --add-label "sync" 2>/dev/null || echo "Note: 'sync' label not found, skipping label addition"
           fi
 
-      # 6️⃣ Optional: Clean up old sync branches
+      # 7️⃣ Optional: Clean up old sync branches
       - name: Clean up old sync branches
         if: success()
         run: |
