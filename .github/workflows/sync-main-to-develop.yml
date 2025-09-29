@@ -69,6 +69,7 @@ jobs:
           
           **Triggered by:** ${{ github.event.head_commit.message }}
           **Commit:** ${{ github.sha }}
+          **Run ID:** ${GITHUB_RUN_ID}"
           
           # Check if a PR already exists from this branch
           EXISTING_PR=$(gh pr list --head "$SYNC_BRANCH" --base "$DEVELOP_BRANCH" --json number --jq '.[0].number' || echo "")
