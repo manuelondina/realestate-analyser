@@ -9,24 +9,60 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout main with full history
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
 
+      # 2️⃣ Configure Git
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create Sync PR
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: sync main into develop"
-          branch: develop
-          base: develop
-          title: "Sync main → develop"
-          body: "Automatic PR to update develop branch with changes from main."
-          labels: sync
-          draft: false
+      # 3️⃣ Create or update temporary sync branch from main
+      - name: Create or update sync branch
+        run: |
+          SYNC_BRANCH="sync/main-to-develop-${GITHUB_RUN_ID}"
+          MAIN_BRANCH="main"
+          DEVELOP_BRANCH="develop"
+
+          # Fetch remote main to ensure up-to-date
+          git fetch origin $MAIN_BRANCH
+
+          # Check if temp branch exists on remote
+          if git ls-remote --heads origin "$SYNC_BRANCH" > /dev/null; then
+            git checkout "$SYNC_BRANCH"
+            git rebase origin/$MAIN_BRANCH --no-verify
+          else
+            git checkout -b "$SYNC_BRANCH" origin/$MAIN_BRANCH
+          fi
+
+          # Push temp branch to remote
+          git push -u origin "$SYNC_BRANCH"
+
+      # 4️⃣ Create or edit PR to develop
+      - name: Create PR to develop
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SYNC_BRANCH="sync/main-to-develop-${GITHUB_RUN_ID}"
+          DEVELOP_BRANCH="develop"
+          PR_TITLE="Sync main → develop"
+          PR_BODY="Automated PR to update develop with changes from main."
+
+          # Check if a PR already exists from this branch
+          EXISTING_PR=$(gh pr list --head "$SYNC_BRANCH" --base "$DEVELOP_BRANCH" --json number --jq '.[0].number')
+
+          if [ -n "$EXISTING_PR" ]; then
+            gh pr edit "$EXISTING_PR" --title "$PR_TITLE" --body "$PR_BODY"
+          else
+            gh pr create \
+              --head "$SYNC_BRANCH" \
+              --base "$DEVELOP_BRANCH" \
+              --title "$PR_TITLE" \
+              --body "$PR_BODY" \
+              --label "sync"
+          fi
