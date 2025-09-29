@@ -15,7 +15,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.GH_PAT }} # <-- Use your PAT secret here
+          token: ${{ secrets.GH_PAT }}
 
       # 2️⃣ Configure Git
       - name: Configure Git
@@ -23,48 +23,67 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # 3️⃣ Create or update temporary sync branch safely
-      - name: Create or update sync branch
+      # 3️⃣ Fetch all branches and ensure develop exists
+      - name: Fetch branches
+        run: |
+          git fetch origin develop:develop || {
+            echo "Error: develop branch does not exist"
+            exit 1
+          }
+
+      # 4️⃣ Create sync branch from main
+      - name: Create sync branch
         run: |
           SYNC_BRANCH="sync/main-to-develop-${GITHUB_RUN_ID}"
-          MAIN_BRANCH="main"
-          DEVELOP_BRANCH="develop"
-
-          # Fetch remote branches to ensure everything is available
-          git fetch origin $MAIN_BRANCH
-          git fetch origin
-
-          # If temp branch exists locally, checkout and rebase
-          if git show-ref --verify --quiet refs/heads/$SYNC_BRANCH; then
-            git checkout $SYNC_BRANCH
-            git rebase origin/$MAIN_BRANCH --no-verify
-          else
-            # Create the temp branch explicitly from origin/main
-            git checkout -b $SYNC_BRANCH origin/$MAIN_BRANCH
-          fi
-
-          # Push temp branch to remote using PAT
+          
+          # Create and checkout the sync branch from current main
+          git checkout -b $SYNC_BRANCH
+          
+          # Push to remote
           git push -u origin $SYNC_BRANCH
 
-      # 4️⃣ Create or edit PR to develop
+      # 5️⃣ Create PR to develop
       - name: Create PR to develop
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }} # Use PAT here too
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           SYNC_BRANCH="sync/main-to-develop-${GITHUB_RUN_ID}"
           DEVELOP_BRANCH="develop"
-          PR_TITLE="Sync main → develop"
-          PR_BODY="Automated PR to update develop with changes from main."
-
+          PR_TITLE="🔄 Sync main → develop"
+          PR_BODY="Automated PR to update develop with changes from main.
+          
+          **Triggered by:** ${{ github.event.head_commit.message }}
+          **Commit:** ${{ github.sha }}
+          **Run ID:** ${GITHUB_RUN_ID}"
+          
           # Check if a PR already exists from this branch
-          EXISTING_PR=$(gh pr list --head "$SYNC_BRANCH" --base "$DEVELOP_BRANCH" --json number --jq '.[0].number')
-
+          EXISTING_PR=$(gh pr list --head "$SYNC_BRANCH" --base "$DEVELOP_BRANCH" --json number --jq '.[0].number' || echo "")
+          
           if [ -n "$EXISTING_PR" ]; then
+            echo "Updating existing PR #$EXISTING_PR"
             gh pr edit "$EXISTING_PR" --title "$PR_TITLE" --body "$PR_BODY"
           else
+            echo "Creating new PR"
             gh pr create \
               --head "$SYNC_BRANCH" \
               --base "$DEVELOP_BRANCH" \
               --title "$PR_TITLE" \
               --body "$PR_BODY" \
               --label "sync"
+          fi
+
+      # 6️⃣ Optional: Clean up old sync branches
+      - name: Clean up old sync branches
+        if: success()
+        run: |
+          # Delete sync branches older than 7 days
+          git fetch --prune
+          git for-each-ref --format='%(refname:short) %(creatordate:unix)' refs/remotes/origin/sync/main-to-develop-* | \
+          while read branch timestamp; do
+            branch_name=${branch#origin/}
+            age=$(($(date +%s) - timestamp))
+            if [ $age -gt 604800 ]; then
+              echo "Deleting old branch: $branch_name"
+              git push origin --delete $branch_name || true
+            fi
+          done
