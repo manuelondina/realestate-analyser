@@ -5,17 +5,21 @@ on:
     branches:
       - main
 
+# Grant write permissions to the default GITHUB_TOKEN
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1️⃣ Checkout main with full history and PAT for write access
+      # 1️⃣ Checkout main with full history
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.GH_PAT }}
 
       # 2️⃣ Configure Git
       - name: Configure Git
@@ -45,7 +49,7 @@ jobs:
       # 5️⃣ Create PR to develop
       - name: Create PR to develop
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SYNC_BRANCH="sync/main-to-develop-${GITHUB_RUN_ID}"
           DEVELOP_BRANCH="develop"
