@@ -63,7 +63,7 @@ coverage/
 *.p12
 *.jks
 
-# Maven wrapper (if not needed in container)
-.mvn/
-mvnw
-mvnw.cmd
+# Maven wrapper files are needed for Docker build
+# .mvn/
+# mvnw
+# mvnw.cmd
