@@ -3,8 +3,7 @@
 # Note: Java 25 may not be available yet, using Java 21 as fallback
 FROM eclipse-temurin:21-jdk-alpine AS build
 
-# Install Maven (Alpine doesn't include it by default)
-RUN apk add --no-cache maven
+# Maven wrapper will handle Maven installation
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -12,17 +11,27 @@ WORKDIR /app
 # Copy the pom.xml file first to leverage Docker's caching
 # If pom.xml doesn't change, Docker won't re-run the dependency download
 COPY code/pom.xml .
+COPY code/.mvn ./.mvn
+COPY code/mvnw .
+COPY code/mvnw.cmd .
+
+# Make mvnw executable
+RUN chmod +x mvnw
 
 # Download dependencies separately to build cache layer
 # Use -B for batch mode (non-interactive) and -q for quiet output
-RUN mvn dependency:go-offline -B -q
+RUN ./mvnw dependency:go-offline -B -q
 
-# Copy the rest of the source code
-COPY code/src /app/src
+# Copy the complete project structure for hexagonal architecture
+COPY code/boot ./boot
+COPY code/api ./api
+COPY code/application ./application
+COPY code/domain ./domain
+COPY code/infrastructure ./infrastructure
 
 # Package the application into a JAR file
 # Add more Maven optimization flags
-RUN mvn package -DskipTests -B -q --no-transfer-progress
+RUN ./mvnw package -DskipTests -B -q --no-transfer-progress
 
 # --- STAGE 2: RUNTIME STAGE ---
 # Use Eclipse Temurin JRE for better stability and security
