@@ -1,23 +1,23 @@
 spring:
   application:
     name: realestate-analyser
-  
-  # Database configuration (commented out for initial deployment)
-  # datasource:
-  #   url: ${DATABASE_URL}
-  #   username: ${DATABASE_USERNAME}
-  #   password: ${DATABASE_PASSWORD}
-  #   driver-class-name: ${DATABASE_DRIVER}
-  # 
-  # jpa:
-  #   hibernate:
-  #     ddl-auto: ${DDL_AUTO:create-drop}
-  #     show-sql: ${SHOW_SQL:false}
-  
-  # OpenAI configuration (commented out for initial deployment)
-  # ai:
-  #   openai:
-  #     api-key: ${OPENAI_API_KEY}
+
+  # Database configuration - values loaded from environment variables
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+      show-sql: ${SHOW_SQL:false}
+
+  # OpenAI configuration - API key loaded from environment
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
 
 server:
   port: ${PORT:8080}
