@@ -1,0 +1,69 @@
+# Maven build directory
+target/
+
+# Git artifacts
+.git/
+.gitignore
+.gitattributes
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+Thumbs.db
+
+# Logs and temporary files
+logs/
+*.log
+*.tmp
+*.temp
+
+# Node.js (in case you have frontend assets)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker artifacts
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile*
+.dockerignore
+
+# Documentation and project files
+*.md
+LICENSE
+.github/
+
+# Test coverage and reports
+coverage/
+*.coverage
+.nyc_output/
+
+# Environment and config files (security)
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+*.jks
+
+# Maven wrapper (if not needed in container)
+.mvn/
+mvnw
+mvnw.cmd
