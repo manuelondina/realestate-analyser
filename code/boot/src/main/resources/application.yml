@@ -2,22 +2,22 @@ spring:
   application:
     name: realestate-analyser
   
-  # Database configuration for production (Render will override with environment variables)
-  datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
-    driver-class-name: ${DATABASE_DRIVER}
+  # Database configuration (commented out for initial deployment)
+  # datasource:
+  #   url: ${DATABASE_URL}
+  #   username: ${DATABASE_USERNAME}
+  #   password: ${DATABASE_PASSWORD}
+  #   driver-class-name: ${DATABASE_DRIVER}
+  # 
+  # jpa:
+  #   hibernate:
+  #     ddl-auto: ${DDL_AUTO:create-drop}
+  #     show-sql: ${SHOW_SQL:false}
   
-  jpa:
-    hibernate:
-      ddl-auto: ${DDL_AUTO:create-drop}
-    show-sql: ${SHOW_SQL:true}
-  
-  # OpenAI configuration
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY}
+  # OpenAI configuration (commented out for initial deployment)
+  # ai:
+  #   openai:
+  #     api-key: ${OPENAI_API_KEY}
 
 server:
   port: ${PORT:8080}
