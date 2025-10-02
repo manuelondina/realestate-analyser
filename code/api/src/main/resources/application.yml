@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: realestate-analyser
+
+  # Database configuration - values loaded from environment variables
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+      show-sql: ${SHOW_SQL:false}
+
+  # OpenAI configuration - API key loaded from environment
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.springter.realestate: ${LOG_LEVEL:INFO}
