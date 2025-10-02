@@ -22,14 +22,6 @@
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
-        <!-- Optional: Money and Currency support -->
-        <dependency>
-            <groupId>org.javamoney</groupId>
-            <artifactId>moneta</artifactId>
-            <version>1.4.2</version>
-        </dependency>
-
-        <!-- Common testing dependencies are inherited from parent -->
     </dependencies>
 
     <build>

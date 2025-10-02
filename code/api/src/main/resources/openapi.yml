@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Real Estate Analyser API
+  description: AI-Powered Real Estate Comparison Tool API
+  version: 1.0.0
+  contact:
+    name: Real Estate Analyser Team
+    url: https://github.com/manuelondina/realestate-analyser
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  # Real Estate API endpoints
+  /realestate:
+    $ref: './realestate/paths.yml#/realestate'
+
+components:
+  # Shared schemas and components
+  schemas:
+    RealEstatePageResponse:
+      $ref: './realestate/components.yml#/RealEstatePageResponse'
+    RealEstateProperty:
+      $ref: './realestate/components.yml#/RealEstateProperty'
+    ErrorResponse:
+      $ref: './realestate/components.yml#/ErrorResponse'
