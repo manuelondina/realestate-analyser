@@ -6,6 +6,7 @@ RealEstatePageResponse:
     - size
     - totalElements
     - totalPages
+    - numberOfElements
   properties:
     content:
       type: array
@@ -28,14 +29,6 @@ RealEstatePageResponse:
       type: integer
       description: Total number of pages
       example: 8
-    first:
-      type: boolean
-      description: Whether this is the first page
-      example: true
-    last:
-      type: boolean
-      description: Whether this is the last page
-      example: false
     numberOfElements:
       type: integer
       description: Number of items in current page

@@ -60,13 +60,11 @@ public class RealEstateController implements RealEstateApi {
     private RealEstatePageResponse convertToPageResponse(Page<RealEstateProperty> page) {
         return new RealEstatePageResponse()
                 .content(page.getContent())
-                .page(page.getNumber())  // Spring's getNumber() gives current page
-                .size(page.getSize())    // Spring's getSize() gives page size
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .numberOfElements(page.getNumberOfElements());
+                .page(page.getNumber())      // Current page (0-based)
+                .size(page.getSize())        // Requested page size  
+                .totalElements(page.getTotalElements())  // Total items in entire dataset
+                .totalPages(page.getTotalPages())        // Total number of pages
+                .numberOfElements(page.getNumberOfElements()); // Items in current page (useful for last page)
     }
     
     /**
