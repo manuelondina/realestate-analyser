@@ -23,13 +23,6 @@ realestate:
           minimum: 1
           maximum: 100
           default: 20
-      - name: sort
-        in: query
-        description: Sort criteria in the format property,direction (e.g., price,asc)
-        required: false
-        schema:
-          type: string
-          default: "id,asc"
       - name: location
         in: query
         description: Filter by location/city

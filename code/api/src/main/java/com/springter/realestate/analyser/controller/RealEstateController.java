@@ -4,6 +4,10 @@ import com.springter.realestate.analyser.api.RealEstateApi;
 import com.springter.realestate.analyser.model.RealEstatePageResponse;
 import com.springter.realestate.analyser.model.RealEstateProperty;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,78 +22,104 @@ public class RealEstateController implements RealEstateApi {
     public ResponseEntity<RealEstatePageResponse> getAllRealEstate(
             Integer page,
             Integer size,
-            String sort,
             String location,
             Double minPrice,
             Double maxPrice,
             String propertyType) {
 
-        log.info("Getting real estate properties - page: {}, size: {}, sort: {}, location: {}, minPrice: {}, maxPrice: {}, propertyType: {}",
-                page, size, sort, location, minPrice, maxPrice, propertyType);
+        log.info("Getting real estate properties - page: {}, size: {}, location: {}, minPrice: {}, maxPrice: {}, propertyType: {}", 
+                page, size, location, minPrice, maxPrice, propertyType);
 
-        // Create sample data for demonstration
-        List<RealEstateProperty> sampleProperties = createSampleProperties();
-
-        // Create paginated response
-        RealEstatePageResponse response = new RealEstatePageResponse()
-                .content(sampleProperties)
-                .page(page)
-                .size(size)
-                .totalElements(150L)
-                .totalPages(8)
-                .first(page == 0)
-                .last(page == 7)
-                .numberOfElements(sampleProperties.size());
+        // Create Pageable from parameters
+        Pageable pageable = PageRequest.of(
+            page != null ? page : 0, 
+            size != null ? size : 20
+        );
+        
+        // Get sample data and create page
+        List<RealEstateProperty> allProperties = createSampleProperties();
+        
+        // Simulate pagination - in real app, this would be done by the repository
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), allProperties.size());
+        List<RealEstateProperty> pageContent = start < allProperties.size() ? 
+            allProperties.subList(start, end) : List.of();
+        
+        // Create Spring Data Page
+        Page<RealEstateProperty> propertiesPage = new PageImpl<>(pageContent, pageable, allProperties.size());
+        
+        // Convert to OpenAPI response format
+        RealEstatePageResponse response = convertToPageResponse(propertiesPage);
 
         return ResponseEntity.ok(response);
     }
 
     /**
+     * Convert Spring Data Page to OpenAPI response format
+     */
+    private RealEstatePageResponse convertToPageResponse(Page<RealEstateProperty> page) {
+        return new RealEstatePageResponse()
+                .content(page.getContent())
+                .page(page.getNumber())  // Spring's getNumber() gives current page
+                .size(page.getSize())    // Spring's getSize() gives page size
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .first(page.isFirst())
+                .last(page.isLast())
+                .numberOfElements(page.getNumberOfElements());
+    }
+    
+    /**
      * Create sample real estate properties for demonstration
+     * Expanded to show proper pagination with more properties
      */
     private List<RealEstateProperty> createSampleProperties() {
-        RealEstateProperty property1 = new RealEstateProperty()
-                .id(1001L)
-                .title("Beautiful 3-bedroom house in downtown Madrid")
-                .description("Spacious family home with modern amenities and great location")
-                .location("Madrid, Spain")
-                .price(350000.00)
-                .propertyType(RealEstateProperty.PropertyTypeEnum.HOUSE)
-                .bedrooms(3)
-                .bathrooms(2)
-                .area(120.5)
-                .features(List.of("parking", "garden", "balcony", "elevator"))
-                .createdAt(OffsetDateTime.now().minusDays(30))
-                .updatedAt(OffsetDateTime.now().minusDays(5));
-
-        RealEstateProperty property2 = new RealEstateProperty()
-                .id(1002L)
-                .title("Modern 2-bedroom apartment with sea view")
-                .description("Luxury apartment with stunning views and premium finishes")
-                .location("Barcelona, Spain")
-                .price(280000.00)
-                .propertyType(RealEstateProperty.PropertyTypeEnum.APARTMENT)
-                .bedrooms(2)
-                .bathrooms(1)
-                .area(85.0)
-                .features(List.of("sea_view", "balcony", "air_conditioning", "elevator"))
-                .createdAt(OffsetDateTime.now().minusDays(15))
-                .updatedAt(OffsetDateTime.now().minusDays(2));
-
-        RealEstateProperty property3 = new RealEstateProperty()
-                .id(1003L)
-                .title("Charming villa with pool in Valencia")
-                .description("Exclusive villa with private pool and garden in residential area")
-                .location("Valencia, Spain")
-                .price(450000.00)
-                .propertyType(RealEstateProperty.PropertyTypeEnum.VILLA)
-                .bedrooms(4)
-                .bathrooms(3)
-                .area(200.0)
-                .features(List.of("pool", "garden", "parking", "fireplace", "terrace"))
-                .createdAt(OffsetDateTime.now().minusDays(10))
-                .updatedAt(OffsetDateTime.now().minusDays(1));
-
-        return List.of(property1, property2, property3);
+        return List.of(
+            createProperty(1001L, "Beautiful 3-bedroom house in downtown Madrid", "Madrid, Spain", 350000.00, 
+                RealEstateProperty.PropertyTypeEnum.HOUSE, 3, 2, 120.5, 
+                List.of("parking", "garden", "balcony", "elevator"), 30),
+            
+            createProperty(1002L, "Modern 2-bedroom apartment with sea view", "Barcelona, Spain", 280000.00, 
+                RealEstateProperty.PropertyTypeEnum.APARTMENT, 2, 1, 85.0, 
+                List.of("sea_view", "balcony", "air_conditioning", "elevator"), 15),
+            
+            createProperty(1003L, "Charming villa with pool in Valencia", "Valencia, Spain", 450000.00, 
+                RealEstateProperty.PropertyTypeEnum.VILLA, 4, 3, 200.0, 
+                List.of("pool", "garden", "parking", "fireplace", "terrace"), 10),
+            
+            createProperty(1004L, "Cozy 1-bedroom condo in Bilbao", "Bilbao, Spain", 180000.00, 
+                RealEstateProperty.PropertyTypeEnum.CONDO, 1, 1, 55.0, 
+                List.of("elevator", "balcony"), 5),
+            
+            createProperty(1005L, "Spacious townhouse with garage", "Seville, Spain", 320000.00, 
+                RealEstateProperty.PropertyTypeEnum.TOWNHOUSE, 3, 2, 140.0, 
+                List.of("garage", "terrace", "storage"), 20),
+            
+            createProperty(1006L, "Commercial space in city center", "Madrid, Spain", 550000.00, 
+                RealEstateProperty.PropertyTypeEnum.COMMERCIAL, null, 1, 95.0, 
+                List.of("elevator", "parking", "reception"), 7),
+            
+            createProperty(1007L, "Luxury penthouse with panoramic views", "Barcelona, Spain", 780000.00, 
+                RealEstateProperty.PropertyTypeEnum.APARTMENT, 3, 2, 160.0, 
+                List.of("penthouse", "panoramic_view", "terrace", "elevator", "parking"), 12)
+        );
+    }
+    
+    private RealEstateProperty createProperty(Long id, String title, String location, Double price, 
+            RealEstateProperty.PropertyTypeEnum type, Integer bedrooms, Integer bathrooms, Double area, 
+            List<String> features, int daysAgo) {
+        return new RealEstateProperty()
+                .id(id)
+                .title(title)
+                .description("Sample property description for " + title.toLowerCase())
+                .location(location)
+                .price(price)
+                .propertyType(type)
+                .bedrooms(bedrooms)
+                .bathrooms(bathrooms)
+                .area(area)
+                .features(features)
+                .createdAt(OffsetDateTime.now().minusDays(daysAgo))
+                .updatedAt(OffsetDateTime.now().minusDays(daysAgo / 2));
     }
 }

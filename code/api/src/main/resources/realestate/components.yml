@@ -6,9 +6,6 @@ RealEstatePageResponse:
     - size
     - totalElements
     - totalPages
-    - first
-    - last
-    - numberOfElements
   properties:
     content:
       type: array
@@ -42,7 +39,28 @@ RealEstatePageResponse:
     numberOfElements:
       type: integer
       description: Number of items in current page
+      example: 3
+
+PageableResponse:
+  type: object
+  required:
+    - pageNumber
+    - pageSize
+    - offset
+  properties:
+    pageNumber:
+      type: integer
+      description: Current page number (0-based)
+      example: 0
+    pageSize:
+      type: integer
+      description: Number of items per page
       example: 20
+    offset:
+      type: integer
+      format: int64
+      description: Offset from the start
+      example: 0
 
 RealEstateProperty:
   type: object
