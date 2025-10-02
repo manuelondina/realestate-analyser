@@ -1,0 +1,143 @@
+RealEstatePageResponse:
+  type: object
+  required:
+    - content
+    - page
+    - size
+    - totalElements
+    - totalPages
+    - first
+    - last
+    - numberOfElements
+  properties:
+    content:
+      type: array
+      items:
+        $ref: '#/RealEstateProperty'
+    page:
+      type: integer
+      description: Current page number (0-based)
+      example: 0
+    size:
+      type: integer
+      description: Number of items per page
+      example: 20
+    totalElements:
+      type: integer
+      format: int64
+      description: Total number of available items
+      example: 150
+    totalPages:
+      type: integer
+      description: Total number of pages
+      example: 8
+    first:
+      type: boolean
+      description: Whether this is the first page
+      example: true
+    last:
+      type: boolean
+      description: Whether this is the last page
+      example: false
+    numberOfElements:
+      type: integer
+      description: Number of items in current page
+      example: 20
+
+RealEstateProperty:
+  type: object
+  required:
+    - id
+    - title
+    - location
+    - price
+    - propertyType
+    - createdAt
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Unique identifier for the property
+      example: 1001
+    title:
+      type: string
+      description: Property title/name
+      example: "Beautiful 3-bedroom house in downtown"
+    description:
+      type: string
+      description: Detailed property description
+      example: "Spacious family home with modern amenities and great location"
+    location:
+      type: string
+      description: Property location/address
+      example: "Madrid, Spain"
+    price:
+      type: number
+      format: double
+      description: Property price in EUR
+      example: 350000.00
+    propertyType:
+      type: string
+      enum: [HOUSE, APARTMENT, CONDO, TOWNHOUSE, VILLA, COMMERCIAL]
+      description: Type of property
+      example: "HOUSE"
+    bedrooms:
+      type: integer
+      description: Number of bedrooms
+      example: 3
+    bathrooms:
+      type: integer
+      description: Number of bathrooms
+      example: 2
+    area:
+      type: number
+      format: double
+      description: Property area in square meters
+      example: 120.5
+    features:
+      type: array
+      items:
+        type: string
+      description: List of property features
+      example: ["parking", "garden", "balcony", "elevator"]
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+      description: List of property image URLs
+      example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+    createdAt:
+      type: string
+      format: date-time
+      description: When the property was added to the system
+      example: "2023-12-01T10:30:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: When the property was last updated
+      example: "2023-12-01T15:45:00Z"
+
+ErrorResponse:
+  type: object
+  required:
+    - message
+    - timestamp
+  properties:
+    message:
+      type: string
+      description: Error message
+      example: "Invalid request parameters"
+    details:
+      type: string
+      description: Additional error details
+      example: "The 'size' parameter must be between 1 and 100"
+    timestamp:
+      type: string
+      format: date-time
+      description: When the error occurred
+      example: "2023-12-01T10:30:00Z"
+    path:
+      type: string
+      description: The API path that caused the error
+      example: "/realestate"

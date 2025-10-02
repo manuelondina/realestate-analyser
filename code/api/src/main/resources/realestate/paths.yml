@@ -1,0 +1,80 @@
+realestate:
+  get:
+    summary: Get all real estate properties
+    description: Retrieve a paginated list of real estate properties with optional filtering
+    operationId: getAllRealEstate
+    tags:
+      - Real Estate
+    parameters:
+      - name: page
+        in: query
+        description: Page number (0-based)
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      - name: size
+        in: query
+        description: Number of items per page
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: sort
+        in: query
+        description: Sort criteria in the format property,direction (e.g., price,asc)
+        required: false
+        schema:
+          type: string
+          default: "id,asc"
+      - name: location
+        in: query
+        description: Filter by location/city
+        required: false
+        schema:
+          type: string
+      - name: minPrice
+        in: query
+        description: Minimum price filter
+        required: false
+        schema:
+          type: number
+          format: double
+          minimum: 0
+      - name: maxPrice
+        in: query
+        description: Maximum price filter
+        required: false
+        schema:
+          type: number
+          format: double
+          minimum: 0
+      - name: propertyType
+        in: query
+        description: Filter by property type
+        required: false
+        schema:
+          type: string
+          enum: [HOUSE, APARTMENT, CONDO, TOWNHOUSE, VILLA, COMMERCIAL]
+    responses:
+      '200':
+        description: Successfully retrieved real estate properties
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/RealEstatePageResponse'
+      '400':
+        description: Bad request - invalid parameters
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/ErrorResponse'
+      '500':
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/ErrorResponse'
