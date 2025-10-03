@@ -15,22 +15,20 @@
     <description>REST API layer and Spring Boot application entry point</description>
 
     <dependencies>
-        <!-- All other layers - API can see everything -->
+        <!-- Domain layer - API needs domain entities and DTOs -->
         <dependency>
             <groupId>com.springter</groupId>
             <artifactId>realestate-analyser-domain</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <!-- Application layer - API depends on application services through interfaces -->
         <dependency>
             <groupId>com.springter</groupId>
             <artifactId>realestate-analyser-application</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.springter</groupId>
-            <artifactId>realestate-analyser-infrastructure</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        
 
         <!-- Spring Boot Web for REST APIs -->
         <dependency>
@@ -62,6 +60,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+        
 
         <!-- OpenAPI Generator Dependencies -->
         <dependency>
@@ -153,27 +152,6 @@
                 </executions>
             </plugin>
 
-            <!-- Spring Boot Maven Plugin - only in API module -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>com.springter.realestate.analyser.RealestateAnalyserApplication</mainClass>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
