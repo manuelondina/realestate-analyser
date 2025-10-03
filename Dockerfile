@@ -1,68 +1,50 @@
 # --- STAGE 1: BUILD STAGE ---
-# Use Eclipse Temurin (more stable than generic OpenJDK for Java 21+)
-# Note: Java 25 may not be available yet, using Java 21 as fallback
 FROM eclipse-temurin:21-jdk-alpine AS build
 
-# Maven wrapper will handle Maven installation
-
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the pom.xml file first to leverage Docker's caching
-# If pom.xml doesn't change, Docker won't re-run the dependency download
+# Copy everything Maven needs (pom.xml + modules + wrapper)
 COPY code/pom.xml .
 COPY code/.mvn ./.mvn
 COPY code/mvnw .
 COPY code/mvnw.cmd .
 
-# Make mvnw executable
-RUN chmod +x mvnw
-
-# Download dependencies separately to build cache layer
-# Use -B for batch mode (non-interactive) and -q for quiet output
-RUN ./mvnw dependency:go-offline -B -q
-
-# Copy the complete project structure for hexagonal architecture
+# Copy submodules BEFORE running dependency:go-offline
 COPY code/boot ./boot
 COPY code/api ./api
 COPY code/application ./application
 COPY code/domain ./domain
 COPY code/infrastructure ./infrastructure
 
-# Package the application into a JAR file
-# Add more Maven optimization flags
+RUN chmod +x mvnw
+
+# Download dependencies (with modules available now)
+RUN ./mvnw dependency:go-offline -B -q
+
+# Package JAR (skip tests for faster build)
 RUN ./mvnw package -DskipTests -B -q --no-transfer-progress
 
 # --- STAGE 2: RUNTIME STAGE ---
-# Use Eclipse Temurin JRE for better stability and security
 FROM eclipse-temurin:21-jre-alpine
 
-# Install wget for health checks and create a non-root user for security
+# Install wget for health checks + create non-root user
 RUN apk add --no-cache wget && \
     addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
-# Set the working directory
 WORKDIR /app
-
-# Change ownership of the working directory
 RUN chown -R appuser:appgroup /app
 
-# Copy the final JAR file from the 'build' stage
-# Based on your pom.xml: realestate-analyser-0.0.1-SNAPSHOT.jar
+# Copy JAR from build stage
 COPY --from=build --chown=appuser:appgroup /app/target/realestate-analyser-*.jar app.jar
 
-# Switch to non-root user
 USER appuser
 
-# Expose the port your Spring Boot application runs on (default is 8080)
 EXPOSE 8080
 
-# Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
-# Define the command to run the application with optimized JVM settings
 ENTRYPOINT ["java", \
     "-XX:+UseContainerSupport", \
     "-XX:MaxRAMPercentage=75.0", \
