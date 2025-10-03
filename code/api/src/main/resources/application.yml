@@ -2,6 +2,11 @@ spring:
   application:
     name: realestate-analyser
 
+  security:
+    user:
+      name: ${USER}
+      password: ${PASS}
+
   # Database configuration - values loaded from environment variables
   datasource:
     url: ${DATABASE_URL}
