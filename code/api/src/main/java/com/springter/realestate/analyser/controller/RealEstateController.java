@@ -1,13 +1,11 @@
 package com.springter.realestate.analyser.controller;
 
 import com.springter.realestate.analyser.api.RealEstateApi;
+import com.springter.realestate.analyser.domain.common.Page;
+import com.springter.realestate.analyser.domain.common.PageRequest;
 import com.springter.realestate.analyser.model.RealEstatePageResponse;
 import com.springter.realestate.analyser.model.RealEstateProperty;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,23 +24,22 @@ public class RealEstateController implements RealEstateApi {
             Double minPrice,
             Double maxPrice,
             String propertyType) {
-
-        log.info("Getting real estate properties - page: {}, size: {}, location: {}, minPrice: {}, maxPrice: {}, propertyType: {}",
+        log.info("Getting real estate properties - page: {}, size: {}, location: {}, minPrice: {}, maxPrice: {}, propertyType: {},",
                 page, size, location, minPrice, maxPrice, propertyType);
 
-        Pageable pageable = PageRequest.of(
+        PageRequest pageRequest = PageRequest.of(
             page != null ? page : 0,
             size != null ? size : 20
         );
 
         List<RealEstateProperty> allProperties = createSampleProperties();
 
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), allProperties.size());
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min(start + pageRequest.getSize(), allProperties.size());
         List<RealEstateProperty> pageContent = start < allProperties.size() ?
             allProperties.subList(start, end) : List.of();
 
-        Page<RealEstateProperty> propertiesPage = new PageImpl<>(pageContent, pageable, allProperties.size());
+        Page<RealEstateProperty> propertiesPage = Page.of(pageContent, pageRequest, allProperties.size());
 
         RealEstatePageResponse response = convertToPageResponse(propertiesPage);
 
@@ -52,7 +49,7 @@ public class RealEstateController implements RealEstateApi {
     private RealEstatePageResponse convertToPageResponse(Page<RealEstateProperty> page) {
         return new RealEstatePageResponse()
                 .content(page.getContent())
-                .page(page.getNumber())
+                .page(page.getPage())
                 .size(page.getSize())
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())
