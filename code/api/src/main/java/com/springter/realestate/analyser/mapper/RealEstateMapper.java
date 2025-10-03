@@ -1,10 +1,8 @@
 package com.springter.realestate.analyser.mapper;
 
 import com.springter.realestate.analyser.domain.common.Page;
-import com.springter.realestate.analyser.domain.realestate.RealEstateProperty;
 import com.springter.realestate.analyser.domain.realestate.RealEstateSearchCriteria;
 import com.springter.realestate.analyser.model.RealEstatePageResponse;
-import com.springter.realestate.analyser.model.RealEstateProperty;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -78,13 +76,13 @@ public interface RealEstateMapper {
     /**
      * Maps string property type to domain enum
      */
-    default RealEstateProperty.PropertyType mapPropertyTypeFromString(String propertyType) {
+    default com.springter.realestate.analyser.domain.realestate.RealEstateProperty.PropertyType mapPropertyTypeFromString(String propertyType) {
         if (propertyType == null) {
             return null;
         }
         
         try {
-            return RealEstateProperty.PropertyType.valueOf(propertyType.toUpperCase());
+            return com.springter.realestate.analyser.domain.realestate.RealEstateProperty.PropertyType.valueOf(propertyType.toUpperCase());
         } catch (IllegalArgumentException e) {
             return null; // Invalid property type, ignore filter
         }
