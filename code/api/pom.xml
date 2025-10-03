@@ -22,13 +22,6 @@
             <version>${project.version}</version>
         </dependency>
         
-        <!-- Application layer - API depends on application services through interfaces -->
-        <dependency>
-            <groupId>com.springter</groupId>
-            <artifactId>realestate-analyser-application</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
 
         <!-- Spring Boot Web for REST APIs -->
         <dependency>
