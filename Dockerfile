@@ -27,7 +27,6 @@ RUN ./mvnw package -DskipTests -B -q --no-transfer-progress
 # --- STAGE 2: RUNTIME STAGE ---
 FROM eclipse-temurin:21-jre-alpine
 
-# Install wget for health checks + create non-root user
 RUN apk add --no-cache wget && \
     addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
@@ -35,8 +34,8 @@ RUN apk add --no-cache wget && \
 WORKDIR /app
 RUN chown -R appuser:appgroup /app
 
-# Copy JAR from build stage
-COPY --from=build --chown=appuser:appgroup /app/target/realestate-analyser-*.jar app.jar
+# ✅ Copy the final JAR from the correct module (boot)
+COPY --from=build --chown=appuser:appgroup /app/boot/target/realestate-analyser-*.jar app.jar
 
 USER appuser
 
@@ -51,3 +50,4 @@ ENTRYPOINT ["java", \
     "-XX:+OptimizeStringConcat", \
     "-XX:+UseG1GC", \
     "-jar", "app.jar"]
+

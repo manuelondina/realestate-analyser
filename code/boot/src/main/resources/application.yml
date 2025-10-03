@@ -1,5 +1,10 @@
 spring:
-  # Database configuration - set these environment variables in your IDE:
+
+  security:
+    user:
+      name: ${USER}
+      password: ${PASS}
+
   # DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD
   datasource:
     url: ${DATABASE_URL}
