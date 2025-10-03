@@ -1,12 +1,32 @@
 spring:
-  # Disable database auto-configuration for now
+  # Database configuration - set these environment variables in your IDE:
+  # DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  # JPA/Hibernate configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate # Validates that database schema matches JPA entities
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+
+  # Disable auto-configurations we don't need yet
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
       - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
-      
+
 logging:
   level:
     com.springter: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

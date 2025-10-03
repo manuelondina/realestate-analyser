@@ -1,7 +1,9 @@
 package com.springter.realestate.analyser;
 
+import com.springter.realestate.analyser.infrastructure.persistence.jpa.repository.HouseJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -12,6 +14,10 @@ import org.springframework.test.context.TestPropertySource;
 				"org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration"
 })
 class RealestateAnalyserApplicationTests {
+
+	// Mock the JPA repository so Spring doesn't try to create a real database connection
+	@MockBean
+	private HouseJpaRepository houseJpaRepository;
 
 	@Test
 	void contextLoads() {
