@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -30,16 +31,12 @@ class RealEstateControllerTest {
 
     @Mock
     private FindRealEstatePropertiesUseCase findPropertiesUseCase;
-    
+
     @Mock
     private RealEstateMapper mapper;
-    
-    private RealEstateController controller;
 
-    @BeforeEach
-    void setUp() {
-        controller = new RealEstateController(findPropertiesUseCase, mapper);
-    }
+    @InjectMocks
+    private RealEstateController controller;
 
     @Nested
     @DisplayName("GET /realestate - getAllRealEstate")
@@ -49,27 +46,27 @@ class RealEstateControllerTest {
         @DisplayName("Should return paginated response with default parameters")
         void shouldReturnPaginatedResponseWithDefaults() {
             // Given
-            RealEstateSearchCriteria expectedCriteria = RealEstateSearchCriteria.builder().build();
-            Page<RealEstateProperty> mockPage = Page.of(
-                List.of(createSampleDomainProperty()), 
-                PageRequest.of(0, 20), 
+            final RealEstateSearchCriteria expectedCriteria = RealEstateSearchCriteria.builder().build();
+            final Page<RealEstateProperty> mockPage = Page.of(
+                List.of(RealEstateControllerTest.this.createSampleDomainProperty()),
+                PageRequest.of(0, 20),
                 1L
             );
-            RealEstatePageResponse expectedResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse expectedResponse = new RealEstatePageResponse()
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .numberOfElements(1)
-                .content(List.of(createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria(null, null, null, null)).thenReturn(expectedCriteria);
-            when(findPropertiesUseCase.findProperties(any(RealEstateSearchCriteria.class), any(PageRequest.class)))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null)).thenReturn(expectedCriteria);
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(RealEstateSearchCriteria.class), any(PageRequest.class)))
                 .thenReturn(mockPage);
-            when(mapper.toPageResponse(any(Page.class))).thenReturn(expectedResponse);
-            
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any(Page.class))).thenReturn(expectedResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 null, null, null, null, null, null
             );
 
@@ -77,7 +74,7 @@ class RealEstateControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
 
-            RealEstatePageResponse pageResponse = response.getBody();
+            final RealEstatePageResponse pageResponse = response.getBody();
             assertThat(pageResponse.getPage()).isEqualTo(0);
             assertThat(pageResponse.getSize()).isEqualTo(20);
             assertThat(pageResponse.getTotalElements()).isEqualTo(1L);
@@ -90,18 +87,18 @@ class RealEstateControllerTest {
         @DisplayName("Should handle custom page and size parameters")
         void shouldHandleCustomPageAndSizeParameters() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(0).size(3).totalElements(7L).totalPages(3).numberOfElements(3)
                 .content(List.of());
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
                 .thenReturn(Page.of(List.of(), PageRequest.of(0, 3), 7L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 0, 3, null, null, null, null
             );
 
@@ -114,18 +111,18 @@ class RealEstateControllerTest {
         @DisplayName("Should handle second page correctly")
         void shouldHandleSecondPageCorrectly() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(1).size(3).totalElements(7L).totalPages(3).numberOfElements(3)
-                .content(List.of(createSampleDtoProperty(), createSampleDtoProperty(), createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty(), RealEstateControllerTest.this.createSampleDtoProperty(), RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
-                .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(1, 3), 7L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(1, 3), 7L));
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 1, 3, null, null, null, null
             );
 
@@ -133,7 +130,7 @@ class RealEstateControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
 
-            RealEstatePageResponse pageResponse = response.getBody();
+            final RealEstatePageResponse pageResponse = response.getBody();
 
             assertThat(pageResponse.getPage()).isEqualTo(1);
             assertThat(pageResponse.getSize()).isEqualTo(3);
@@ -147,18 +144,18 @@ class RealEstateControllerTest {
         @DisplayName("Should handle last page with fewer elements")
         void shouldHandleLastPageWithFewerElements() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(2).size(3).totalElements(7L).totalPages(3).numberOfElements(1)
-                .content(List.of(createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
-                .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(2, 3), 7L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(2, 3), 7L));
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 2, 3, null, null, null, null
             );
 
@@ -166,7 +163,7 @@ class RealEstateControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
 
-            RealEstatePageResponse pageResponse = response.getBody();
+            final RealEstatePageResponse pageResponse = response.getBody();
 
             assertThat(pageResponse.getPage()).isEqualTo(2);
             assertThat(pageResponse.getSize()).isEqualTo(3);
@@ -180,18 +177,18 @@ class RealEstateControllerTest {
         @DisplayName("Should handle page beyond available data")
         void shouldHandlePageBeyondAvailableData() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(10).size(3).totalElements(7L).totalPages(3).numberOfElements(0)
                 .content(List.of());
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
                 .thenReturn(Page.of(List.of(), PageRequest.of(10, 3), 7L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 10, 3, null, null, null, null
             );
 
@@ -199,7 +196,7 @@ class RealEstateControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
 
-            RealEstatePageResponse pageResponse = response.getBody();
+            final RealEstatePageResponse pageResponse = response.getBody();
 
             assertThat(pageResponse.getPage()).isEqualTo(10);
             assertThat(pageResponse.getSize()).isEqualTo(3);
@@ -213,18 +210,18 @@ class RealEstateControllerTest {
         @DisplayName("Should accept filter parameters without error")
         void shouldAcceptFilterParametersWithoutError() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(0).size(10).totalElements(3L).totalPages(1).numberOfElements(3)
-                .content(List.of(createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria("Madrid", 200000.0, 400000.0, "HOUSE"))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria("Madrid", 200000.0, 400000.0, "HOUSE"))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
-                .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 10), 3L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 10), 3L));
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 0, 10, "Madrid", 200000.0, 400000.0, "HOUSE"
             );
 
@@ -232,7 +229,7 @@ class RealEstateControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
 
-            RealEstatePageResponse pageResponse = response.getBody();
+            final RealEstatePageResponse pageResponse = response.getBody();
             assertThat(pageResponse.getContent()).isNotEmpty();
         }
     }
@@ -245,18 +242,18 @@ class RealEstateControllerTest {
         @DisplayName("Should return properties with all required fields")
         void shouldReturnPropertiesWithAllRequiredFields() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(0).size(10).totalElements(2L).totalPages(1).numberOfElements(2)
-                .content(List.of(createSampleDtoProperty(), createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty(), RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
-                .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 10), 2L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 10), 2L));
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 0, 10, null, null, null, null
             );
 
@@ -278,18 +275,18 @@ class RealEstateControllerTest {
         @DisplayName("Should return diverse property types")
         void shouldReturnDiversePropertyTypes() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(0).size(10).totalElements(7L).totalPages(1).numberOfElements(7)
-                .content(List.of(createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
-                .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 10), 7L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 10), 7L));
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 0, 10, null, null, null, null
             );
 
@@ -303,18 +300,18 @@ class RealEstateControllerTest {
         @DisplayName("Should return properties with different locations")
         void shouldReturnPropertiesWithDifferentLocations() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(0).size(10).totalElements(7L).totalPages(1).numberOfElements(7)
-                .content(List.of(createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
-                .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 10), 7L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 10), 7L));
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 0, 10, null, null, null, null
             );
 
@@ -328,18 +325,18 @@ class RealEstateControllerTest {
         @DisplayName("Should return properties with varying prices")
         void shouldReturnPropertiesWithVaryingPrices() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(0).size(10).totalElements(7L).totalPages(1).numberOfElements(7)
-                .content(List.of(createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
-                .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 10), 7L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 10), 7L));
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 0, 10, null, null, null, null
             );
 
@@ -353,18 +350,18 @@ class RealEstateControllerTest {
         @DisplayName("Should return properties with features")
         void shouldReturnPropertiesWithFeatures() {
             // Given
-            RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+            final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                 .page(0).size(10).totalElements(7L).totalPages(1).numberOfElements(7)
-                .content(List.of(createSampleDtoProperty()));
-            
-            when(mapper.toSearchCriteria(null, null, null, null))
+                .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+            when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                 .thenReturn(RealEstateSearchCriteria.builder().build());
-            when(findPropertiesUseCase.findProperties(any(), any()))
-                .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 10), 7L));
-            when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-            
+            when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 10), 7L));
+            when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
             // When
-            ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+            final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                 0, 10, null, null, null, null
             );
 
@@ -382,18 +379,18 @@ class RealEstateControllerTest {
             @DisplayName("Should handle null parameters gracefully")
             void shouldHandleNullParametersGracefully() {
                 // Given
-                RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+                final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                     .page(0).size(20).totalElements(5L).totalPages(1).numberOfElements(5)
-                    .content(List.of(createSampleDtoProperty()));
-                
-                when(mapper.toSearchCriteria(null, null, null, null))
+                    .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+                when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                     .thenReturn(RealEstateSearchCriteria.builder().build());
-                when(findPropertiesUseCase.findProperties(any(), any()))
-                    .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 20), 5L));
-                when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-                
+                when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                    .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 20), 5L));
+                when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
                 // When
-                ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+                final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                     null, null, null, null, null, null
                 );
 
@@ -408,18 +405,18 @@ class RealEstateControllerTest {
             @DisplayName("Should handle zero page parameter")
             void shouldHandleZeroPageParameter() {
                 // Given
-                RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+                final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                     .page(0).size(5).totalElements(7L).totalPages(2).numberOfElements(5)
-                    .content(List.of(createSampleDtoProperty()));
-                
-                when(mapper.toSearchCriteria(null, null, null, null))
+                    .content(List.of(RealEstateControllerTest.this.createSampleDtoProperty()));
+
+                when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                     .thenReturn(RealEstateSearchCriteria.builder().build());
-                when(findPropertiesUseCase.findProperties(any(), any()))
-                    .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 5), 7L));
-                when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-                
+                when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                    .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 5), 7L));
+                when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
                 // When
-                ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+                final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                     0, 5, null, null, null, null
                 );
 
@@ -433,23 +430,23 @@ class RealEstateControllerTest {
             @DisplayName("Should handle large page size")
             void shouldHandleLargePageSize() {
                 // Given
-                List<com.springter.realestate.analyser.model.RealEstateProperty> properties = List.of(
-                    createSampleDtoProperty(), createSampleDtoProperty(), createSampleDtoProperty(),
-                    createSampleDtoProperty(), createSampleDtoProperty(), createSampleDtoProperty(),
-                    createSampleDtoProperty()
+                final List<com.springter.realestate.analyser.model.RealEstateProperty> properties = List.of(
+                    RealEstateControllerTest.this.createSampleDtoProperty(), RealEstateControllerTest.this.createSampleDtoProperty(), RealEstateControllerTest.this.createSampleDtoProperty(),
+                    RealEstateControllerTest.this.createSampleDtoProperty(), RealEstateControllerTest.this.createSampleDtoProperty(), RealEstateControllerTest.this.createSampleDtoProperty(),
+                    RealEstateControllerTest.this.createSampleDtoProperty()
                 );
-                RealEstatePageResponse mockResponse = new RealEstatePageResponse()
+                final RealEstatePageResponse mockResponse = new RealEstatePageResponse()
                     .page(0).size(100).totalElements(7L).totalPages(1).numberOfElements(7)
                     .content(properties);
-                
-                when(mapper.toSearchCriteria(null, null, null, null))
+
+                when(RealEstateControllerTest.this.mapper.toSearchCriteria(null, null, null, null))
                     .thenReturn(RealEstateSearchCriteria.builder().build());
-                when(findPropertiesUseCase.findProperties(any(), any()))
-                    .thenReturn(Page.of(List.of(createSampleDomainProperty()), PageRequest.of(0, 100), 7L));
-                when(mapper.toPageResponse(any())).thenReturn(mockResponse);
-                
+                when(RealEstateControllerTest.this.findPropertiesUseCase.findProperties(any(), any()))
+                    .thenReturn(Page.of(List.of(RealEstateControllerTest.this.createSampleDomainProperty()), PageRequest.of(0, 100), 7L));
+                when(RealEstateControllerTest.this.mapper.toPageResponse(any())).thenReturn(mockResponse);
+
                 // When
-                ResponseEntity<RealEstatePageResponse> response = controller.getAllRealEstate(
+                final ResponseEntity<RealEstatePageResponse> response = RealEstateControllerTest.this.controller.getAllRealEstate(
                     0, 100, null, null, null, null
                 );
 
@@ -462,7 +459,7 @@ class RealEstateControllerTest {
             }
         }
     }
-    
+
     // Helper methods for creating test objects
     private RealEstateProperty createSampleDomainProperty() {
         return RealEstateProperty.builder()
@@ -480,7 +477,7 @@ class RealEstateControllerTest {
             .updatedAt(OffsetDateTime.now())
             .build();
     }
-    
+
     private com.springter.realestate.analyser.model.RealEstateProperty createSampleDtoProperty() {
         return new com.springter.realestate.analyser.model.RealEstateProperty()
             .id(1L)
